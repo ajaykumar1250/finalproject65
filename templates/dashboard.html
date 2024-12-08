@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retail Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1 style="color: #2c3e50;">Retail Dashboard</h1>
+        <nav>
+            <ul>
+                <li><a href="/" style="color: #2980b9;">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+    <section style="text-align: center; margin: 20px auto;">
+    <h2 style="margin-bottom: 20px; color: #8e44ad;">Demographics and Engagement</h2>
+    <div style="width: 100%;">
+        <canvas id="demographicsChart"></canvas>
+    </div>
+    <script>
+        fetch('/get_demographics_data')
+            .then(response => response.json())
+            .then(data => {
+                const hhSize = data.map(item => `HH Size: ${item.HH_size}, Children: ${item.Children}`);
+                const frequency = data.map(item => item.Frequency);
+
+                const ctx = document.getElementById('demographicsChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: hhSize,
+                        datasets: [{
+                            label: 'Household Engagement Frequency',
+                            data: frequency,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
+</section>
+
+
+        <section>
+            <h2 style="color: #16a085;">Engagement Over Time</h2>
+            <canvas id="engagementChart"></canvas>
+            <script>
+                fetch('/get_engagement_over_time')
+                    .then(response => response.json())
+                    .then(data => {
+                        const years = data.map(item => item.Year);
+                        const totalSpend = data.map(item => item.Total_Spend);
+
+                        const ctx = document.getElementById('engagementChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: years,
+                                datasets: [{
+                                    label: 'Total Spend Over Time',
+                                    data: totalSpend,
+                                    borderColor: 'rgba(75, 192, 192, 1)',
+                                    fill: false
+                                }]
+                            }
+                        });
+                    });
+            </script>
+        </section>
+
+        <section>
+    <h2 style="color: #d35400;">Basket Analysis: Cross-Selling Opportunities</h2>
+    <canvas id="basketChart"></canvas>
+    <script>
+        fetch('/get_basket_analysis')
+            .then(response => response.json())
+            .then(data => {
+                const labels = data.map(item => `${item.Product_A} & ${item.Product_B}`);
+                const frequencies = data.map(item => item.Frequency);
+
+                const ctx = document.getElementById('basketChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Frequency of Co-Purchases',
+                            data: frequencies,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: { title: { display: true, text: 'Product Combinations' } },
+                            y: { beginAtZero: true, title: { display: true, text: 'Frequency' } }
+                        }
+                    }
+                });
+            });
+    </script>
+</section>
+
+
+        <section>
+            <h2 style="color: #8e44ad;">Seasonal Trends</h2>
+            <canvas id="seasonalChart"></canvas>
+            <script>
+                fetch('/get_seasonal_trends')
+                    .then(response => response.json())
+                    .then(data => {
+                        const weeks = data.map(item => `${item.PURCHASE_}`);
+                        const spend = data.map(item => item.Monthly_Spend);
+
+                        const ctx = document.getElementById('seasonalChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: weeks,
+                                datasets: [{
+                                    label: 'Weekly Spend',
+                                    data: spend,
+                                    borderColor: 'rgba(153, 102, 255, 1)',
+                                    fill: false
+                                }]
+                            }
+                        });
+                    });
+            </script>
+        </section>
+
+        <section>
+            <h2 style="color: #c0392b;">Brand Preferences</h2>
+            <canvas id="brandChart"></canvas>
+            <script>
+                fetch('/get_brand_preferences')
+                    .then(response => response.json())
+                    .then(data => {
+                        const brands = data.map(item => item.Brand_type);
+                        const frequencies = data.map(item => item.Frequency);
+
+                        const ctx = document.getElementById('brandChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: brands,
+                                datasets: [{
+                                    label: 'Brand Preferences',
+                                    data: frequencies,
+                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                    borderColor: 'rgba(255, 159, 64, 1)',
+                                    borderWidth: 1
+                                }]
+                            }
+                        });
+                    });
+            </script>
+        </section>
+
+    <section style="margin: 30px 0;">
+    <h2 style="color: #27ae60;">Churn Prediction</h2>
+    <div id="churnPrediction">
+        <h3 style="color: #34495e;">Retail Question: Which customers are at risk of disengaging, and how can retention strategies address this?</h3>
+        <div>
+            <div style="width: 100%;">
+                <h4 style="color: #2980b9;">Churn by Age Range</h4>
+                <canvas id="churnByAgeChart" style="width: 100%;"></canvas>
+            </div>
+            <div style="width: 100%; max-width: 800px;">
+                <h4 style="color: #8e44ad;">Churn Distribution</h4>
+                <canvas id="churnDistributionChart" style="width: 100%;"></canvas>
+            </div>
+        </div>
+    </div>
+    <script>
+        fetch('/get_churn_predictions')
+            .then(response => response.json())
+            .then(data => {
+                const churnByAge = data.churn_by_age;
+                const churnDistribution = data.churn_distribution;
+
+                const ageRanges = churnByAge.map(item => item.Age_range);
+                const highChurnCounts = churnByAge.map(item => item.High_Churn_Count);
+
+                const ctxAge = document.getElementById('churnByAgeChart').getContext('2d');
+                new Chart(ctxAge, {
+                    type: 'bar',
+                    data: {
+                        labels: ageRanges,
+                        datasets: [{
+                            label: 'High Churn Count',
+                            data: highChurnCounts,
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: { beginAtZero: true },
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+
+                const churnLabels = churnDistribution.map(item => item.Churn_Risk);
+                const churnCounts = churnDistribution.map(item => item.Count);
+
+                const ctxDistribution = document.getElementById('churnDistributionChart').getContext('2d');
+                new Chart(ctxDistribution, {
+                    type: 'pie',
+                    data: {
+                        labels: churnLabels,
+                        datasets: [{
+                            label: 'Churn Distribution',
+                            data: churnCounts,
+                            backgroundColor: [
+                                'rgba(255, 99, 132, 0.2)',
+                                'rgba(75, 192, 192, 0.2)'
+                            ],
+                            borderColor: [
+                                'rgba(255, 99, 132, 1)',
+                                'rgba(75, 192, 192, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    }
+                });
+            });
+    </script>
+</section>
+
+    </main>
+
+</body>
+</html>

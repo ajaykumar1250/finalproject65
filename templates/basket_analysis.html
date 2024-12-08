@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basket Analysis ML Results</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 1.5em 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2em;
+        }
+        header nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 1em 0 0;
+        }
+        header nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        header nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        header nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main Content */
+        main {
+            max-width: 1200px;
+            margin: 2em auto;
+            padding: 2em;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        section {
+            margin-bottom: 2em;
+        }
+        h2 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1em 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            text-align: left;
+            padding: 0.8em;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Preformatted Text */
+        pre {
+            background: #f4f4f4;
+            padding: 1em;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: Consolas, monospace;
+            color: #333;
+            margin-top: 1em;
+            border: 1px solid #ddd;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 1em 0;
+            background-color: #333;
+            color: white;
+            margin-top: 2em;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Basket Analysis Results</h1>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/dashboard">Explore Retail Challenges</a></li>
+                <li><a href="/upload">Upload Data</a></li>
+                <li><a href="/search">Search Data</a></li>
+                <li><a href="/get_basket_analysis_ml">Basket Analysis ML model</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>Top Product Pairs</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Product A</th>
+                        <th>Product B</th>
+                        <th>Frequency</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pair in top_pairs %}
+                    <tr>
+                        <td>{{ pair.Product_A }}</td>
+                        <td>{{ pair.Product_B }}</td>
+                        <td>{{ pair.Frequency }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Model Performance</h2>
+            <pre>
+Classification Report:
+{{ model_report['classification_report'] }}
+
+Accuracy: {{ model_report['accuracy'] }}
+Precision: {{ model_report['precision'] }}
+Recall: {{ model_report['recall'] }}
+F1-Score: {{ model_report['f1_score'] }}
+            </pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Retail Dashboard</p>
+    </footer>
+</body>
+</html>
