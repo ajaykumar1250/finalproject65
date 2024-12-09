@@ -110,14 +110,27 @@ def index():
 @app.route("/upload", methods=["GET", "POST"])
 def upload():
     if request.method == "POST":
-        table_name = request.form.get("table")
-        file = request.files.get("file")
+        transactions_file = request.files.get("transactions_file")
+        households_file = request.files.get("households_file")
+        products_file = request.files.get("products_file")
 
-        if file and table_name:
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-            file.save(filepath)
-            load_csv_to_sql(filepath, table_name)
-            return redirect(url_for("search"))
+        if households_file:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], households_file.filename)
+            households_file.save(filepath)
+            load_csv_to_sql(filepath, "Households")
+
+        if transactions_file:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], transactions_file.filename)
+            transactions_file.save(filepath)
+            load_csv_to_sql(filepath, "Transactions")
+
+        if products_file:
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], products_file.filename)
+            products_file.save(filepath)
+            load_csv_to_sql(filepath, "Products")
+
+        return redirect(url_for("upload", message="Files uploaded successfully!"))
+
     return render_template("upload.html")
 
 # Function to load CSV data into SQL database
@@ -126,43 +139,53 @@ def load_csv_to_sql(filepath, table_name):
 
     cursor = conn.cursor()
 
-    # Iterate over rows and insert only new entries
-    for _, row in df.iterrows():
-        # Build SQL query to insert new rows if they don't exist already
-        if table_name == "Transactions":
+    # Insert into Transactions table
+    if table_name == "Transactions":
+        for _, row in df.iterrows():
             sql = f"""
                 IF NOT EXISTS (
-                    SELECT 1 FROM Transactions WHERE Basket_num = ? 
+                    SELECT 1 FROM Transactions WHERE Basket_num = ? AND Product_num = ?
                 )
                 INSERT INTO Transactions (Basket_num, Hshd_num, PURCHASE_, Product_num, Spend, Units, STORE_R, Week_num, Year)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
-            cursor.execute(sql, row['Basket_num'], row['Hshd_num'], row['PURCHASE_'], row['Product_num'],
-                           row['Spend'], row['Units'], row['STORE_R'], row['Week_num'], row['Year'])
+            cursor.execute(sql, 
+                           row['BASKET_NUM'], row['PRODUCT_NUM'],  # Basket_num and Product_num for the SELECT clause
+                           row['BASKET_NUM'], row['HSHD_NUM'], row['PURCHASE_'], row['PRODUCT_NUM'],
+                           row['SPEND'], row['UNITS'], row['STORE_R'], row['WEEK_NUM'], row['YEAR'])  # Correct number of parameters for INSERT
 
-        elif table_name == "Households":
+    # Insert into Households table
+    elif table_name == "Households":
+        for _, row in df.iterrows():
             sql = f"""
                 IF NOT EXISTS (
-                    SELECT 1 FROM Households WHERE Hshd_num = ? 
+                    SELECT 1 FROM Households WHERE Hshd_num = ?
                 )
                 INSERT INTO Households (Hshd_num, Loyalty_flag, Age_range, Marital_status, Income_range, Homeowner_flag, Household_Composition, HH_size, Children)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
             """
-            cursor.execute(sql, row['Hshd_num'], row['Loyalty_flag'], row['Age_range'], row['Marital_status'], row['Income_range'],
-                           row['Homeowner_flag'], row['Household_Composition'], row['HH_size'], row['Children'])
+            cursor.execute(sql, 
+                           row['HSHD_NUM'],  # Hshd_num for the SELECT clause
+                           row['HSHD_NUM'], row['L'], row['AGE_RANGE'], row['MARITAL'], row['INCOME_RANGE'],
+                           row['HOMEOWNER'], row['HSHD_COMPOSITION'], row['HH_SIZE'], row['CHILDREN'])  # Correct number of parameters for INSERT
 
-        elif table_name == "Products":
+    # Insert into Products table
+    elif table_name == "Products":
+        for _, row in df.iterrows():
             sql = f"""
                 IF NOT EXISTS (
-                    SELECT 1 FROM Products WHERE Product_num = ? 
+                    SELECT 1 FROM Products WHERE Product_num = ?
                 )
                 INSERT INTO Products (Product_num, Department, Commodity, BRAND_TY, Natural_organic_flag)
                 VALUES (?, ?, ?, ?, ?);
             """
-            cursor.execute(sql, row['Product_num'], row['Department'], row['Commodity'],
-                           row['BRAND_TY'], row['Natural_organic_flag'])
+            cursor.execute(sql, 
+                           row['PRODUCT_NUM'],  # Product_num for the SELECT clause
+                           row['PRODUCT_NUM'], row['DEPARTMENT'], row['COMMODITY'],
+                           row['BRAND_TY'], row['NATURAL_ORGANIC_FLAG'])  # Correct number of parameters for INSERT
 
     conn.commit()
+
 
 # Route for the search page
 @app.route("/search", methods=["GET", "POST"])
@@ -216,6 +239,57 @@ def search():
         results = cursor.fetchall()
     
     return render_template("search.html", results=results)
+
+# Route for displaying data for HSHD_NUM 10
+@app.route("/samplepull", methods=["GET"])
+def sample_pull():
+    # Query to fetch data for HSHD_NUM = 10
+    query = '''
+        SELECT 
+                T.Hshd_num, 
+                T.Basket_num, 
+                T.PURCHASE_, 
+                T.Product_num, 
+                P.Department, 
+                P.Commodity,
+                H.Loyalty_flag,
+                H.Age_range,
+                H.Marital_status,
+                H.Income_range,
+                H.Homeowner_flag,
+                H.Household_composition,
+                H.HH_size,
+                H.Children,
+                T.Spend,
+                T.Units,
+                T.STORE_R,
+                T.Week_num,
+                T.Year,
+                P.BRAND_TY,
+                P.Natural_organic_flag
+            FROM 
+                Transactions T
+            JOIN 
+                Households H ON T.Hshd_num = H.Hshd_num
+            JOIN 
+                Products P ON T.Product_num = P.Product_num
+            WHERE 
+                T.Hshd_num = 10
+            ORDER BY 
+                T.Hshd_num, 
+                T.Basket_num, 
+                T.PURCHASE_, 
+                T.Product_num, 
+                P.Department, 
+                P.Commodity;
+        '''
+    
+    cursor = conn.cursor()
+    cursor.execute(query)
+    results = cursor.fetchall()
+
+    # Render the results on samplepull.html
+    return render_template("samplepull.html", results=results)
 
 # Route for the dashboard page
 @app.route("/dashboard")

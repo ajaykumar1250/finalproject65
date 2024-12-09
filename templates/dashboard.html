@@ -19,14 +19,14 @@
     <main>
     <section style="text-align: center; margin: 20px auto;">
     <h2 style="margin-bottom: 20px; color: #8e44ad;">Demographics and Engagement</h2>
-    <div style="width: 100%;">
+    <div style="width: 100%; max-width: 800px; margin: 0 auto;">
         <canvas id="demographicsChart"></canvas>
     </div>
     <script>
         fetch('/get_demographics_data')
             .then(response => response.json())
             .then(data => {
-                const hhSize = data.map(item => `HH Size: ${item.HH_size}, Children: ${item.Children}`);
+                const hhSize = data.map(item => `${item.HH_size},${item.Children}`);
                 const frequency = data.map(item => item.Frequency);
 
                 const ctx = document.getElementById('demographicsChart').getContext('2d');
@@ -43,12 +43,43 @@
                         }]
                     },
                     options: {
-                        scales: {
-                            y: {
-                                beginAtZero: true
-                            }
-                        }
-                    }
+    scales: {
+        x: {
+            ticks: {
+                autoSkip: false, // Ensure all labels are shown
+                maxRotation: 45, // Rotate labels for better readability
+                minRotation: 0,  // Prevent unnecessary rotation
+                align: 'center', // Center-align the labels
+                padding: 10   ,   // Add padding between the labels and the axis
+            },
+            title: {
+                display: true,
+                text: 'Household and Children (HH: Children)',
+                color: '#333',  // Label color
+                font: {
+                    size: 14    // Adjust font size for readability
+                }
+            }
+        },
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'Frequency',
+                color: '#333',
+                font: {
+                    size: 14
+                }
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: true, // Show the legend
+            position: 'top'
+        }
+    }
+}
                 });
             });
     </script>
@@ -177,7 +208,7 @@
     <div id="churnPrediction">
         <h3 style="color: #34495e;">Retail Question: Which customers are at risk of disengaging, and how can retention strategies address this?</h3>
         <div>
-            <div style="width: 100%;">
+            <div style="width: 100%;margin: 0 auto;">
                 <h4 style="color: #2980b9;">Churn by Age Range</h4>
                 <canvas id="churnByAgeChart" style="width: 100%;"></canvas>
             </div>
@@ -211,11 +242,44 @@
                         }]
                     },
                     options: {
-                        scales: {
-                            x: { beginAtZero: true },
-                            y: { beginAtZero: true }
-                        }
-                    }
+    scales: {
+        x: {
+            ticks: {
+                autoSkip: false,
+                maxRotation: 45,
+                minRotation: 0,
+                align: 'center',
+                padding: 10
+            },
+            title: {
+                display: true,
+                text: 'Age Ranges',
+                color: '#333',
+                font: {
+                    size: 14
+                }
+            }
+        },
+        y: {
+            beginAtZero: true,
+            title: {
+                display: true,
+                text: 'High Churn Count',
+                color: '#333',
+                font: {
+                    size: 14
+                }
+            }
+        }
+    },
+    plugins: {
+        legend: {
+            display: true,
+            position: 'top'
+        }
+    }
+}
+
                 });
 
                 const churnLabels = churnDistribution.map(item => item.Churn_Risk);
